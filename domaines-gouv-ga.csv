@@ -1,0 +1,34 @@
+domaine,entite,categorie,statut,techno_observee,php,base_preuve
+sgg.gouv.ga,Secrétariat Général du Gouvernement,ministere_sgg,confirme,CMS (ANINF),tres_probable,page indexee + credit ANINF
+primature.gouv.ga,Primature (Premier Ministre),ministere_sgg,confirme,Joomla,oui,URL SEF Joomla (/96-... /2-actualites/1409-.../2426-...)
+budget.gouv.ga,"Min. Économie, Finances, Dette et Participations",ministere,confirme,CMS (ANINF),tres_probable,page indexee
+diplomatie.gouv.ga,Min. Affaires Étrangères,ministere,confirme,CMS (ANINF),tres_probable,page indexee
+interieur.gouv.ga,"Min. Intérieur, Sécurité et Décentralisation",ministere,confirme,CMS (ANINF),tres_probable,page indexee + credit ANINF
+travail.gouv.ga,"Min. Travail, Plein Emploi et Dialogue Social",ministere,confirme,CMS (ANINF),tres_probable,page indexee
+fonction-publique.gouv.ga,Min. Fonction Publique et Renforcement des Capacités,ministere,confirme,CMS (ANINF),tres_probable,page indexee
+sante.gouv.ga,Min. Santé,ministere,confirme,CMS (ANINF),tres_probable,page indexee
+agriculture.gouv.ga,"Min. Agriculture, Élevage et Développement Rural",ministere,confirme,CMS (ANINF),tres_probable,page indexee
+petrole.gouv.ga,Min. Pétrole et du Gaz,ministere,confirme,CMS (ANINF),tres_probable,page indexee
+enseignement-superieur.gouv.ga,Min. Enseignement Supérieur et Recherche Scientifique,ministere,confirme,CMS (ANINF),tres_probable,Wikipedia + annuaire
+transports.gouv.ga,Min. Transports / Marine Marchande,ministere,a_verifier,inconnu,tres_probable,reference Wikipedia
+mines.gouv.ga,Min. Mines,ministere,a_verifier,inconnu,tres_probable,annuaire
+justice.gouv.ga,Min. Justice,ministere,a_verifier,inconnu,tres_probable,app Gabon Services + annuaire
+economie-numerique.gouv.ga,Min. Communication & Économie Numérique,ministere,a_verifier,inconnu,tres_probable,ancien annuaire
+education-nationale.gouv.ga,Min. Éducation Nationale,ministere,a_verifier,inconnu,tres_probable,ancien annuaire
+affaires-etrangeres.gouv.ga,Affaires Étrangères (alias de diplomatie),ministere_alias,a_verifier,inconnu,tres_probable,annuaire
+finances.gouv.ga,Finances,ministere,casse_signale,inconnu,inconnu,signale casse dans annuaire
+gouvernement.ga,Portail Gouvernemental (vitrine officielle),portail_hors_gouvga,confirme,WordPress,oui,permaliens date + plugins WP (All-in-One SEO, LayerSlider) via StackScan
+gouv.ga,Portail / landing,portail_hors_gouvga,a_verifier,Microsoft 365 / Airtable (StackScan),non_apparent,profil SaaS StackScan
+presidence.ga,Présidence de la République,institution_hors_gouvga,a_verifier,inconnu,inconnu,app Gabon Services
+assemblee-nationale.ga,Assemblée Nationale,institution_hors_gouvga,a_verifier,inconnu,inconnu,app Gabon Services
+journal-officiel.ga,Journal Officiel,institution_hors_gouvga,a_verifier,inconnu,inconnu,annuaires
+dgi.ga,Direction Générale des Impôts,teleservice_hors_gouvga,a_verifier,inconnu,inconnu,recherche
+e-tax.dgi.ga,Portail fiscal e-Tax,teleservice_hors_gouvga,confirme,application metier,a_verifier,page indexee
+dgdi.ga,Documentation & Immigration,teleservice_hors_gouvga,a_verifier,inconnu,inconnu,recherche
+edgdi.dgdi.ga,"e-DGDI (passeport, e-Visa)",teleservice_hors_gouvga,confirme,application metier,a_verifier,page indexee
+cnamgs.ga,Assurance maladie (CNAMGS),teleservice_hors_gouvga,a_verifier,inconnu,inconnu,recherche
+ecnamgs.cnamgs.ga,Portail e-CNAMGS,teleservice_hors_gouvga,confirme,application metier,a_verifier,presse + page gouvernement
+edeclaration.cnamgs.ga,eDéclaration CNAMGS,teleservice_hors_gouvga,confirme,application metier,a_verifier,page gouvernement
+cnss.ga,Sécurité sociale (CNSS),teleservice_hors_gouvga,a_verifier,inconnu,inconnu,recherche
+tresorpublic.ga,Trésor Public (TrésorPay),teleservice_hors_gouvga,a_verifier,inconnu,inconnu,recherche
+administration.ga,Plateforme e-administration (guichet unique),plateforme_hors_gouvga,en_deploiement,inconnu,inconnu,presse 2026
