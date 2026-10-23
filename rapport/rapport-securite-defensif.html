@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Rapport défensif — Sécurité des sites .gouv.ga</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm 20mm 15mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+    color: #1b2430; font-size: 10.5pt; line-height: 1.5; margin: 0;
+  }
+  h1,h2,h3,h4 { color: #0b3d66; line-height: 1.25; }
+  h1 { font-size: 22pt; margin: 0 0 4px; }
+  h2 { font-size: 15pt; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #0b3d66; }
+  h3 { font-size: 12pt; margin: 16px 0 4px; color: #11598f; }
+  h4 { font-size: 10.5pt; margin: 10px 0 2px; color: #333; }
+  p { margin: 6px 0; }
+  ul,ol { margin: 6px 0 6px 18px; padding: 0; }
+  li { margin: 3px 0; }
+  code { background: #eef2f6; padding: 1px 4px; border-radius: 3px; font-family: "DejaVu Sans Mono","Liberation Mono",monospace; font-size: 9pt; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9.3pt; }
+  th,td { border: 1px solid #c9d4de; padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: #0b3d66; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f3f7fa; }
+  .cover { padding: 40px 0 10px; border-bottom: 4px solid #0b3d66; margin-bottom: 10px; }
+  .cover .sub { color: #46607a; font-size: 13pt; margin-top: 6px; }
+  .meta { color: #5a6b7b; font-size: 9pt; margin-top: 14px; }
+  .box { border: 1px solid #c9d4de; border-left: 5px solid #0b3d66; background: #f7fafc; padding: 10px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; }
+  .warn { border-left-color: #b3261e; background: #fdf3f2; }
+  .ok { border-left-color: #1a7f4b; background: #f1f9f4; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 8pt; font-weight: 700; color: #fff; }
+  .p0 { background: #b3261e; } .p1 { background: #d98300; } .p2 { background: #11598f; }
+  .sev-crit { color:#b3261e; font-weight:700; } .sev-high { color:#d98300; font-weight:700; } .sev-med { color:#11598f; font-weight:700; }
+  .section { page-break-inside: avoid; }
+  .pb { page-break-before: always; }
+  .muted { color: #5a6b7b; }
+  .legend span { margin-right: 14px; }
+  footer { margin-top: 18px; padding-top: 8px; border-top: 1px solid #c9d4de; font-size: 8pt; color: #5a6b7b; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Sécurité des sites gouvernementaux gabonais (<code>.gouv.ga</code>)</h1>
+  <div class="sub">Rapport défensif générique — classes de vulnérabilités &amp; durcissement de la pile WordPress / Joomla / PHP</div>
+  <div class="meta">
+    Version 1.0 — 23 octobre 2026 · Document de travail interne<br>
+    Portée : guide défensif générique, non ciblé · Public visé : administrateurs, DCSI ministérielles, ANINF, prestataires mandatés
+  </div>
+</div>
+
+<div class="box warn">
+  <strong>Avertissement de portée et d'usage.</strong> Ce document est un <strong>guide défensif générique</strong>.
+  Il décrit des <em>classes</em> de vulnérabilités et des mesures de durcissement applicables à la pile technique
+  (WordPress, Joomla, PHP, serveur web) couramment utilisée par les sites <code>.gouv.ga</code>. Il ne contient
+  <strong>aucune instruction d'exploitation</strong> ni aucune cartographie de failles exploitables visant un site nommé.
+  Toute recherche active de vulnérabilités (scan, test d'intrusion) sur un système tiers exige une
+  <strong>autorisation écrite préalable</strong> du propriétaire de l'actif. Les références à des domaines précis
+  (annexe A) constituent un <strong>inventaire d'actifs à protéger</strong> pour leur exploitant, et non une invitation
+  à les attaquer.
+</div>
+
+<h2>1. Résumé exécutif</h2>
+<p>
+  Les sites publics gabonais en <code>.gouv.ga</code> (portail, ministères, secrétariat général) ainsi que le portail
+  <code>gouvernement.ga</code> reposent très majoritairement, d'après des empreintes publiques, sur des
+  <strong>systèmes de gestion de contenu écrits en PHP</strong> — principalement <strong>WordPress</strong> et
+  <strong>Joomla</strong> — conçus et déployés par un atelier commun (l'ANINF). Cette homogénéité est une force pour la
+  gouvernance (durcissement standardisable) mais aussi un risque systémique : <em>une même faiblesse peut toucher tout le parc</em>.
+</p>
+<p>Les priorités défensives, par ordre d'impact et de simplicité de mise en œuvre :</p>
+<table>
+  <tr><th style="width:70px">Priorité</th><th>Action structurante</th><th style="width:150px">Risque couvert</th></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Mettre à jour le noyau CMS et <strong>toutes</strong> les extensions/thèmes ; retirer ceux inutilisés</td><td>Composants vulnérables connus</td></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Authentification forte des comptes d'administration (MFA, mots de passe robustes, suppression des comptes génériques)</td><td>Prise de contrôle de compte</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>HTTPS strict + en-têtes de sécurité + limitation de débit sur les pages de connexion</td><td>Interception, force brute</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Supprimer les fichiers exposés (sauvegardes, <code>.git</code>, <code>phpinfo</code>, pages de debug) et désactiver le listing de répertoires</td><td>Fuite d'information</td></tr>
+  <tr><td><span class="badge p2">P2</span></td><td>Sauvegardes testées + journalisation centralisée + supervision + plan de réponse</td><td>Résilience &amp; détection</td></tr>
+</table>
+
+<h2 class="section">2. Contexte technique</h2>
+<p>
+  Inventaire et empreinte technologique proviennent de sources publiques (moteurs de recherche, structure des URL,
+  profils de technologies publics). Deux constats établis :
+</p>
+<ul>
+  <li><strong>Pile PHP/CMS dominante.</strong> <code>gouvernement.ga</code> fonctionne sous WordPress ; <code>primature.gouv.ga</code> sous Joomla. Les autres sites ministériels, issus du même atelier, sont très probablement sur la même famille (à confirmer par l'exploitant).</li>
+  <li><strong>Homogénéité du parc.</strong> L'ANINF indique avoir réalisé des dizaines de sites ministériels et institutionnels. Un modèle de déploiement commun permet un durcissement « une fois, appliqué partout ».</li>
+</ul>
+<div class="box">
+  <strong>Pourquoi les CMS gouvernementaux sont des cibles fréquentes&nbsp;:</strong> forte visibilité, confiance du public,
+  contenus sensibles, et surtout un <em>cycle de mise à jour souvent en retard</em> sur des plateformes (WordPress/Joomla)
+  dont les failles d'extensions sont publiées en continu.
+</div>
+
+<h2 class="pb">3. Classes de vulnérabilités courantes (vue défensive)</h2>
+<p class="muted">Chaque classe est décrite par son origine, son impact et les mesures de réduction du risque. Aucune procédure d'exploitation n'est fournie.</p>
+
+<div class="section">
+<h3>3.1 Composants tiers obsolètes — <span class="sev-crit">Critique</span></h3>
+<p><strong>Origine :</strong> extensions, plugins, modules et thèmes non mis à jour. C'est la <strong>première cause</strong> de compromission des sites WordPress/Joomla : les failles sont publiées et des codes d'exploitation circulent peu après la publication des correctifs.</p>
+<p><strong>Impact :</strong> exécution de code, création de comptes admin, défiguration, hébergement de contenu malveillant.</p>
+<p><strong>Mesures :</strong> inventaire exhaustif des extensions ; mise à jour régulière ; <strong>désinstallation</strong> (pas seulement désactivation) de tout composant inutile ; n'installer que des extensions maintenues et de source officielle ; suivre les bulletins de sécurité (Joomla VEL, bases de vulnérabilités WordPress).</p>
+</div>
+
+<div class="section">
+<h3>3.2 Noyau CMS non mis à jour — <span class="sev-crit">Critique</span></h3>
+<p><strong>Origine :</strong> version majeure/mineure du CMS en retard (ex. branches Joomla ou WordPress non maintenues).</p>
+<p><strong>Impact :</strong> exposition à des failles corrigées depuis longtemps.</p>
+<p><strong>Mesures :</strong> rester sur une branche supportée ; activer les mises à jour mineures automatiques quand c'est possible ; planifier les montées de version majeures avec recette préalable.</p>
+</div>
+
+<div class="section">
+<h3>3.3 Authentification &amp; gestion des accès — <span class="sev-crit">Critique</span></h3>
+<p><strong>Origine :</strong> mots de passe faibles ou réutilisés, absence de double authentification (MFA), comptes génériques/partagés, comptes de test oubliés, pages d'administration ouvertes sans limitation de tentatives.</p>
+<p><strong>Impact :</strong> prise de contrôle d'un compte à privilèges, donc du site entier.</p>
+<p><strong>Mesures :</strong> MFA obligatoire pour tout compte à privilèges ; politique de mots de passe robustes ; un compte nominatif par personne, principe du moindre privilège ; suppression des comptes inutilisés ; limitation du débit et temporisation sur la connexion ; restriction d'accès à la console d'administration (filtrage IP/VPN quand c'est opérationnellement possible).</p>
+</div>
+
+<div class="section">
+<h3>3.4 Mauvaise configuration &amp; exposition de fichiers — <span class="sev-high">Élevée</span></h3>
+<p><strong>Origine :</strong> listing de répertoires activé, fichiers de sauvegarde (<code>.zip</code>, <code>.sql</code>) laissés dans la racine web, dossier <code>.git</code> exposé, <code>phpinfo()</code>, pages de debug, fichiers de configuration lisibles.</p>
+<p><strong>Impact :</strong> fuite d'identifiants, de code source, de données — souvent le point de départ d'une compromission.</p>
+<p><strong>Mesures :</strong> désactiver le listing de répertoires ; sortir sauvegardes et dépôts de la racine web ; supprimer <code>phpinfo</code>/pages de debug en production ; refuser l'accès aux fichiers sensibles côté serveur ; <code>display_errors=Off</code> en production.</p>
+</div>
+
+<div class="section">
+<h3>3.5 Entrées non validées : injections, XSS, upload — <span class="sev-high">Élevée</span></h3>
+<p><strong>Origine :</strong> données utilisateur insuffisamment validées/échappées (injection SQL, XSS, inclusion de fichiers, upload de fichiers non contrôlé). Concerne surtout les extensions tierces et le code sur mesure.</p>
+<p><strong>Impact :</strong> vol de données, exécution de code, détournement de session.</p>
+<p><strong>Mesures (développement sûr) :</strong> requêtes préparées/paramétrées ; validation stricte en liste blanche ; échappement contextuel en sortie ; contrôle du type et du contenu des fichiers téléversés, stockage hors racine web ; politique de sécurité de contenu (CSP) ; pare-feu applicatif (WAF) en complément, jamais en remplacement du correctif.</p>
+</div>
+
+<div class="section">
+<h3>3.6 Transport, TLS &amp; en-têtes de sécurité — <span class="sev-high">Élevée</span></h3>
+<p><strong>Origine :</strong> HTTP non redirigé vers HTTPS, versions TLS obsolètes, certificats mal gérés, absence d'en-têtes de sécurité.</p>
+<p><strong>Impact :</strong> interception, vol de session, injection de contenu.</p>
+<p><strong>Mesures :</strong> HTTPS partout + redirection ; TLS 1.2/1.3 uniquement ; renouvellement automatisé des certificats ; en-têtes <code>HSTS</code>, <code>Content-Security-Policy</code>, <code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>X-Frame-Options</code>/<code>frame-ancestors</code>.</p>
+</div>
+
+<div class="section">
+<h3>3.7 Sessions &amp; cookies — <span class="sev-med">Moyenne</span></h3>
+<p><strong>Mesures :</strong> cookies <code>Secure</code>, <code>HttpOnly</code>, <code>SameSite</code> ; régénération d'identifiant de session à l'authentification ; expiration raisonnable ; déconnexion effective.</p>
+</div>
+
+<div class="section">
+<h3>3.8 Chaîne d'approvisionnement &amp; thèmes « nulled » — <span class="sev-high">Élevée</span></h3>
+<p><strong>Origine :</strong> extensions/thèmes piratés ou de source non vérifiée, souvent porteurs de portes dérobées.</p>
+<p><strong>Mesures :</strong> sources officielles uniquement ; vérification d'intégrité ; revue avant mise en production ; interdiction formelle des thèmes/extensions « nulled ».</p>
+</div>
+
+<div class="section">
+<h3>3.9 Sauvegardes, journalisation &amp; détection — <span class="sev-med">Moyenne</span></h3>
+<p><strong>Origine :</strong> absence de sauvegardes testées, de journaux exploitables et de supervision.</p>
+<p><strong>Impact :</strong> incapacité à détecter, à investiguer et à restaurer après incident.</p>
+<p><strong>Mesures :</strong> sauvegardes régulières, hors ligne, <strong>restaurées à blanc périodiquement</strong> ; journaux centralisés (web, auth, CMS) ; alertes sur événements sensibles ; plan de réponse à incident écrit.</p>
+</div>
+
+<h2 class="pb">4. Checklist de durcissement priorisée</h2>
+<p class="legend"><span><span class="badge p0">P0</span> immédiat</span><span><span class="badge p1">P1</span> court terme</span><span><span class="badge p2">P2</span> moyen terme</span></p>
+
+<h3>4.1 WordPress</h3>
+<table>
+  <tr><th style="width:60px">Prio.</th><th>Mesure</th></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Noyau, thèmes et extensions à jour ; suppression de l'inutilisé ; mises à jour mineures automatiques.</td></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>MFA sur tous les comptes ; supprimer le compte <code>admin</code> générique ; rôles au moindre privilège.</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Limiter les tentatives de connexion ; protéger la page de connexion ; désactiver l'éditeur de fichiers de l'admin (<code>DISALLOW_FILE_EDIT</code>).</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Désactiver l'API d'énumération et XML-RPC si inutiles ; bloquer l'exécution PHP dans <code>uploads</code>.</td></tr>
+  <tr><td><span class="badge p2">P2</span></td><td>Durcir <code>wp-config.php</code> (clés, permissions) ; plugin de sécurité/monitoring de réputation.</td></tr>
+</table>
+
+<h3>4.2 Joomla</h3>
+<table>
+  <tr><th style="width:60px">Prio.</th><th>Mesure</th></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Noyau sur branche supportée ; extensions à jour ; vérifier chaque extension contre la liste des extensions vulnérables (VEL).</td></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>MFA activé ; renommer/protéger l'accès <code>/administrator</code> ; comptes nominatifs.</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Activer le secret d'URL sur l'administration ; forcer HTTPS pour l'admin ; permissions de fichiers correctes.</td></tr>
+  <tr><td><span class="badge p2">P2</span></td><td>Désactiver l'inscription publique si inutile ; revue des overrides de templates.</td></tr>
+</table>
+
+<h3>4.3 PHP &amp; serveur web (Apache/Nginx)</h3>
+<table>
+  <tr><th style="width:60px">Prio.</th><th>Mesure</th></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Version PHP supportée ; <code>display_errors=Off</code>, <code>expose_php=Off</code> en production.</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Désactiver le listing de répertoires ; interdire l'accès aux fichiers sensibles ; retirer sauvegardes/<code>.git</code>/<code>phpinfo</code> de la racine web.</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>En-têtes de sécurité (HSTS, CSP, X-Content-Type-Options, Referrer-Policy, frame-ancestors) ; TLS 1.2/1.3 seulement.</td></tr>
+  <tr><td><span class="badge p2">P2</span></td><td>WAF en amont ; limitation de débit ; durcissement OS (ex. référentiels CIS, audit Lynis).</td></tr>
+</table>
+
+<h3>4.4 Organisation &amp; exploitation</h3>
+<table>
+  <tr><th style="width:60px">Prio.</th><th>Mesure</th></tr>
+  <tr><td><span class="badge p0">P0</span></td><td>Sauvegardes régulières et <strong>testées</strong> (restauration à blanc) ; copies hors ligne.</td></tr>
+  <tr><td><span class="badge p1">P1</span></td><td>Journalisation centralisée + supervision + alertes ; plan de réponse à incident.</td></tr>
+  <tr><td><span class="badge p2">P2</span></td><td>Cadence de patch définie ; inventaire des actifs et des responsables ; sensibilisation des contributeurs.</td></tr>
+</table>
+
+<h2 class="pb">5. Auto-diagnostic légitime (sur ses propres actifs)</h2>
+<div class="box warn"><strong>Condition impérative :</strong> n'utiliser ces outils que sur des sites dont on est propriétaire ou pour lesquels on détient une autorisation écrite. Respecter les conditions d'utilisation des services tiers.</div>
+<table>
+  <tr><th>Besoin</th><th>Outils légitimes</th></tr>
+  <tr><td>Identifier CMS &amp; versions</td><td><code>whatcms.org</code>, <code>builtwith.com</code>, consoles d'administration du CMS</td></tr>
+  <tr><td>Audit WordPress (son site)</td><td>WPScan (avec jeton), tableau de bord « Santé du site »</td></tr>
+  <tr><td>Audit Joomla (son site)</td><td>Outils de maintenance Joomla, vérification VEL, services de supervision dédiés</td></tr>
+  <tr><td>Qualité TLS</td><td>Qualys SSL Labs</td></tr>
+  <tr><td>En-têtes de sécurité</td><td><code>securityheaders.com</code>, Mozilla Observatory</td></tr>
+  <tr><td>Durcissement serveur/OS</td><td>Lynis, référentiels CIS Benchmarks</td></tr>
+</table>
+
+<h2 class="section">6. Gouvernance (ANINF / DCSI ministérielles)</h2>
+<ul>
+  <li><strong>Standardiser le durcissement</strong> dans l'image/modèle commun de déploiement — levier majeur vu l'homogénéité du parc.</li>
+  <li><strong>Politique de mises à jour</strong> : cadence, fenêtres de maintenance, responsabilités (qui patche quoi, quand).</li>
+  <li><strong>Inventaire vivant</strong> des sites, versions, extensions et responsables.</li>
+  <li><strong>Supervision centralisée</strong> et détection des défigurations/compromissions.</li>
+  <li><strong>Politique de divulgation responsable (VDP)</strong> et point de contact sécurité (idéalement adossés à un CERT national), pour recevoir et traiter les signalements externes.</li>
+  <li><strong>Recette sécurité</strong> avant mise en ligne (revue de code et de configuration des sites sur mesure).</li>
+</ul>
+
+<h2 class="section">7. Références</h2>
+<ul>
+  <li>OWASP Top 10 ; OWASP ASVS (exigences de vérification applicative)</li>
+  <li>WordPress — « Hardening WordPress » (documentation officielle)</li>
+  <li>Joomla — « Security Checklist » &amp; Vulnerable Extensions List (VEL)</li>
+  <li>CIS Benchmarks (serveurs web, OS) ; outil d'audit Lynis</li>
+  <li>Guides d'hygiène de sécurité et recommandations d'un CERT/ANSSI de référence</li>
+  <li>Qualys SSL Labs ; Mozilla Observatory ; securityheaders.com</li>
+</ul>
+
+<h2 class="pb">Annexe A — Parc d'actifs à protéger (inventaire)</h2>
+<p class="muted">Inventaire défensif. La colonne « CMS / PHP » provient d'empreintes publiques et <strong>doit être confirmée par l'exploitant</strong> (en-têtes HTTP, balise generator). Voir le script <code>scripts/check-ga-php.sh</code> du dépôt.</p>
+<table>
+  <tr><th>Domaine</th><th>Entité</th><th>CMS / PHP (empreinte publique)</th></tr>
+  <tr><td>gouvernement.ga</td><td>Portail Gouvernemental</td><td>WordPress (PHP) — confirmé par empreinte</td></tr>
+  <tr><td>primature.gouv.ga</td><td>Primature</td><td>Joomla (PHP) — confirmé par empreinte</td></tr>
+  <tr><td>sgg.gouv.ga</td><td>Secrétariat Général du Gouvernement</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>budget.gouv.ga</td><td>Économie, Finances, Dette et Participations</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>diplomatie.gouv.ga</td><td>Affaires Étrangères</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>interieur.gouv.ga</td><td>Intérieur, Sécurité, Décentralisation</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>travail.gouv.ga</td><td>Travail, Plein Emploi, Dialogue Social</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>fonction-publique.gouv.ga</td><td>Fonction Publique</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>sante.gouv.ga</td><td>Santé</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>agriculture.gouv.ga</td><td>Agriculture, Élevage, Développement Rural</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>petrole.gouv.ga</td><td>Pétrole et Gaz</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>enseignement-superieur.gouv.ga</td><td>Enseignement Supérieur &amp; Recherche</td><td>CMS PHP probable — à confirmer</td></tr>
+  <tr><td>transports.gouv.ga · mines.gouv.ga · justice.gouv.ga · economie-numerique.gouv.ga · education-nationale.gouv.ga</td><td>Autres ministères (à revérifier)</td><td>À confirmer</td></tr>
+  <tr><td>presidence.ga · assemblee-nationale.ga · journal-officiel.ga</td><td>Institutions (hors <code>.gouv.ga</code>)</td><td>À confirmer</td></tr>
+  <tr><td>e-tax.dgi.ga · edgdi.dgdi.ga · ecnamgs.cnamgs.ga · cnss.ga · tresorpublic.ga</td><td>Téléservices (applications métier)</td><td>Langage non déductible — à confirmer</td></tr>
+</table>
+
+<footer>
+  Rapport défensif générique — Sécurité des sites <code>.gouv.ga</code> · v1.0 · 23/10/2026 ·
+  Usage interne / exploitants &amp; auditeurs mandatés · Ne vaut pas autorisation de test sur des systèmes tiers.
+</footer>
+
+</body>
+</html>
